@@ -1,0 +1,706 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/contextLayout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <com.sothree.slidinguppanel.SlidingUpPanelLayout
+        android:id="@+id/umano"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="bottom"
+        android:theme="@style/AppTheme"
+        app:umanoOverlay="true"
+        app:umanoPanelHeight="125dp"
+        tools:context=".MainActivity">
+
+        <android.support.v4.widget.SlidingPaneLayout
+
+            android:id="@+id/slidingPaneLayout"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:fitsSystemWindows="true">
+
+            <RelativeLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <ScrollView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_centerInParent="true">
+
+                    <LinearLayout
+                        android:id="@+id/playlistsLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:orientation="vertical" />
+                </ScrollView>
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/superMainLayout"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:background="@color/colorPrimaryDark"
+                app:layout_constraintBottom_toBottomOf="parent"
+                app:layout_constraintEnd_toEndOf="parent"
+                app:layout_constraintStart_toStartOf="parent"
+                app:layout_constraintTop_toTopOf="parent">
+
+                <RelativeLayout
+                    android:id="@+id/topLayout"
+                    android:layout_width="match_parent"
+                    android:layout_height="50dp"
+                    android:background="@drawable/button">
+
+                    <ProgressBar
+                        android:id="@+id/progressBar"
+                        style="?android:attr/progressBarStyle"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:visibility="visible" />
+
+                    <Button
+                        android:id="@+id/songsCount"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:gravity="center"
+                        android:textSize="20sp"
+                        android:textStyle="bold"
+                        android:onClick="openPlaylistPane"
+                        android:background="@null"
+                        android:visibility="invisible" />
+
+                    <Button
+                        android:id="@+id/playlistName"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:layout_toEndOf="@+id/songsCount"
+                        android:background="@null"
+                        android:gravity="center_vertical"
+                        android:onClick="openPlaylistPane"
+                        android:text="@string/all_songs"
+                        android:textColor="@color/lightText"
+                        android:textSize="20sp"
+                        android:textStyle="bold" />
+
+                    <ImageButton
+                        android:id="@+id/mainMenuButton"
+                        style="@style/Image"
+                        android:layout_width="50dp"
+                        android:layout_height="match_parent"
+                        android:layout_alignParentRight="true"
+                        android:onClick="showMainMenu"
+                        app:srcCompat="@drawable/more"
+                        tools:visibility="gone" />
+
+                </RelativeLayout>
+
+                <ScrollView
+                    android:id="@+id/scrollView"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/topLayout">
+
+                    <LinearLayout
+                        android:id="@+id/mainLayout"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:background="@color/colorPrimaryDark"
+                        android:orientation="vertical"
+                        android:padding="0dp" >
+
+                    </LinearLayout>
+                </ScrollView>
+
+
+            </RelativeLayout>
+        </android.support.v4.widget.SlidingPaneLayout>
+
+        <LinearLayout
+            android:id="@+id/slidingPanel"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@color/colorPrimaryDark"
+            android:orientation="vertical"
+            android:weightSum="100">
+
+            <RelativeLayout
+                android:id="@+id/playPanel"
+                android:layout_width="match_parent"
+                android:layout_height="75dp"
+                android:layout_weight="20">
+
+                <ImageView
+                    android:id="@+id/hidePanelButton"
+                    style="@style/Image"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:background="@null"
+                    android:visibility="gone"
+                    app:srcCompat="@android:drawable/ic_menu_more" />
+
+                <TextView
+                    android:id="@+id/playlistButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="50dp"
+                    android:layout_toEndOf="@id/hidePanelButton"
+                    android:background="@android:color/transparent"
+                    android:gravity="center_vertical"
+                    android:text="@string/all_songs"
+                    android:textColor="@color/shadowText"
+                    android:textSize="24sp"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/editButton"
+                    style="@style/Image"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_toStartOf="@+id/shakeButton"
+                    android:onClick="showEditPanel"
+                    android:visibility="gone"
+                    app:srcCompat="@android:drawable/ic_menu_edit" />
+
+                <ImageButton
+                    android:id="@+id/shakeButton"
+                    style="@style/Image"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_toStartOf="@+id/replayButton"
+                    android:onClick="shakeSongs"
+                    android:src="@drawable/shakeoff"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/replayButton"
+                    style="@style/Image"
+                    android:layout_width="50dp"
+                    android:layout_height="50dp"
+                    android:layout_alignParentEnd="true"
+                    android:onClick="nextReplayMode"
+                    android:src="@drawable/replayplaylist"
+                    android:visibility="gone" />
+
+                <ImageButton
+                    android:id="@+id/playButton"
+                    style="@style/Image"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:onClick="playListener"
+                    app:srcCompat="@drawable/play" />
+
+                <TextView
+                    android:id="@+id/songName"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_toRightOf="@id/playButton"
+                    android:text=""
+                    android:textColor="@color/lightText" />
+
+                <TextView
+                    android:id="@+id/songAuthor"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_below="@id/songName"
+                    android:layout_toRightOf="@id/playButton"
+                    android:gravity="left"
+                    android:text=""
+                    android:textColor="@color/shadowText" />
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/songImagePanel"
+                android:layout_width="match_parent"
+                android:layout_height="250dp"
+                android:layout_weight="40"
+                android:padding="10dp">
+
+                <ImageView
+                    android:id="@+id/songImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:scaleType="centerCrop"
+                    app:srcCompat="@drawable/hibike_black" />
+
+                <ScrollView
+                    android:id="@+id/lirycsScroll"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:focusableInTouchMode="true"
+                    android:scrollbarStyle="insideOverlay">
+
+                    <TextView
+                        android:id="@+id/lirycs"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_horizontal"
+                        android:text=""
+                        android:textColor="@color/lightText"
+                        android:textSize="20sp" />
+                </ScrollView>
+
+            </RelativeLayout>
+
+            <RelativeLayout
+                android:id="@+id/buttonsPanel"
+                android:layout_width="match_parent"
+                android:layout_height="75dp"
+                android:layout_weight="20">
+
+                <TextView
+                    android:id="@+id/songTime"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_margin="10dp"
+                    android:layout_toStartOf="@id/preSongButton"
+                    android:text="00:00" />
+
+                <ImageButton
+                    android:id="@+id/preSongButton"
+                    style="@style/Image"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_alignBottom="@+id/playButton2"
+                    android:layout_toStartOf="@id/playButton2"
+                    android:onClick="prevSong"
+                    app:srcCompat="@android:drawable/ic_media_previous" />
+
+                <ImageButton
+                    android:id="@+id/playButton2"
+                    style="@style/Image"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_centerInParent="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:onClick="playListener"
+                    app:srcCompat="@drawable/play" />
+
+                <ImageButton
+                    android:id="@+id/nextSongButton"
+                    style="@style/Image"
+                    android:layout_width="75dp"
+                    android:layout_height="75dp"
+                    android:layout_alignBottom="@+id/playButton2"
+                    android:layout_toEndOf="@id/playButton2"
+                    android:onClick="nextSong"
+                    app:srcCompat="@android:drawable/ic_media_next" />
+
+                <TextView
+                    android:id="@+id/songDuration"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_alignParentBottom="true"
+                    android:layout_marginStart="10dp"
+                    android:layout_marginTop="10dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="10dp"
+                    android:layout_toEndOf="@id/nextSongButton"
+                    android:text="00:00" />
+
+            </RelativeLayout>
+
+            <SeekBar
+                android:id="@+id/seekBar"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_weight="20" />
+        </LinearLayout>
+
+    </com.sothree.slidinguppanel.SlidingUpPanelLayout>
+
+    <ScrollView
+        android:id="@+id/editPanel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="10dp"
+        android:layout_marginEnd="10dp"
+        android:layout_marginBottom="200dp"
+        android:background="@drawable/overmenu_background"
+        android:focusableInTouchMode="true"
+        android:isScrollContainer="true"
+        android:overScrollMode="always"
+        android:padding="10dp"
+        android:visibility="gone"
+        tools:context=".SongEditActivity">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/textView"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:text="Редактор тегов"
+                android:textColor="@color/lightText"
+                android:textSize="24sp" />
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/songNameEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Название"
+                    android:inputType="textPersonName" />
+            </android.support.design.widget.TextInputLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/songAuthorEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Автор"
+                    android:inputType="textPersonName" />
+            </android.support.design.widget.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal"
+                android:weightSum="2">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <android.support.design.widget.TextInputEditText
+                            android:id="@+id/songAlbumEdit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Альбом"
+                            android:inputType="textPersonName" />
+                    </android.support.design.widget.TextInputLayout>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <android.support.design.widget.TextInputEditText
+                            android:id="@+id/songKindEdit"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Жанр"
+                            android:inputType="textPersonName" />
+                    </android.support.design.widget.TextInputLayout>
+
+                    <android.support.design.widget.TextInputLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent">
+
+                        <android.support.design.widget.TextInputEditText
+                            android:id="@+id/editText"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:hint="Трек"
+                            android:inputType="number" />
+                    </android.support.design.widget.TextInputLayout>
+                </LinearLayout>
+
+                <ImageButton
+                    android:id="@+id/songImageEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@android:color/transparent"
+                    android:onClick="getSongImage"
+                    android:scaleType="centerCrop"
+                    app:srcCompat="@android:drawable/ic_input_add" />
+            </LinearLayout>
+
+            <android.support.design.widget.TextInputLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent">
+
+                <android.support.design.widget.TextInputEditText
+                    android:id="@+id/songLyricsEdit"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:hint="Лирика"
+                    android:inputType="textMultiLine" />
+            </android.support.design.widget.TextInputLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:orientation="horizontal">
+
+                <Button
+                    android:id="@+id/closeEditPanelButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:onClick="closeEditPanel"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:text="@string/close" />
+
+                <Button
+                    android:id="@+id/replaceSongsTags"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:onClick="replaceTags"
+                    android:paddingTop="10dp"
+                    android:paddingBottom="10dp"
+                    android:text="@string/replace"
+                    android:textColor="@color/colorAccent" />
+            </LinearLayout>
+        </LinearLayout>
+    </ScrollView>
+
+    <Button
+        android:id="@+id/shadowBehindMenu"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="@drawable/shadow"
+        android:onClick="shadowListener"
+        android:visibility="gone" />
+
+    <LinearLayout
+        android:id="@+id/songMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
+        android:layout_marginBottom="100dp"
+        android:background="@drawable/overmenu_background"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/editButton2"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="showEditPanel"
+            android:padding="5dp"
+            android:text="Редактировать теги" />
+
+        <Button
+            android:id="@+id/addToPlaylistButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="addToPlaylistListener"
+            android:padding="5dp"
+            android:text="Добавить в плейлист" />
+
+        <Button
+            android:id="@+id/deleteFromPlaylistButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="deleteFromPlaylist"
+            android:padding="5dp"
+            android:text="Удалить из плейлиста" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/playlistMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="100dp"
+        android:layout_marginEnd="100dp"
+        android:background="@drawable/overmenu_background"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="Плейлисты"
+            android:textColor="@color/lightText"
+            android:textSize="18sp" />
+
+        <Button
+            android:id="@+id/newPlaylistButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="newPlaylistListener"
+            android:padding="5dp"
+            android:text="Новый плейлист" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/newPlaylistMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="75dp"
+        android:layout_marginEnd="75dp"
+        android:background="@drawable/overmenu_background"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Новый плейлист:"
+            android:textColor="@color/lightText"
+            android:textStyle="bold" />
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/newPlaylistEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Название плейлиста" />
+
+        </android.support.design.widget.TextInputLayout>
+
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <Button
+                android:id="@+id/cancelButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_toStartOf="@id/createButton"
+                android:onClick="closeNewPlaylistMenu"
+                android:padding="10dp"
+                android:text="@string/close" />
+
+            <Button
+                android:id="@+id/createButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_alignParentEnd="true"
+                android:onClick="createNewPlaylist"
+                android:padding="10dp"
+                android:text="Создать"
+                android:textColor="@color/colorAccent" />
+        </RelativeLayout>
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/mainMenu"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_centerVertical="true"
+        android:layout_marginEnd="20dp"
+        android:background="@drawable/overmenu_background"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <Button
+            android:id="@+id/editPlaylistButton"
+            android:layout_width="wrap_content"
+            android:layout_height="30dp"
+            android:gravity="center_vertical"
+            android:onClick="showThisPlaylistMenu"
+            android:text="Редактировать плейлист" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/thisPlaylistMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="75dp"
+        android:layout_marginEnd="75dp"
+        android:background="@drawable/overmenu_background"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="Редактировать плейлист"
+            android:textColor="@color/lightText" />
+
+        <Button
+            android:id="@+id/editPlaylistName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="showEditPlaylist"
+            android:padding="5dp"
+            android:text="Переименовать" />
+
+        <Button
+            android:id="@+id/deletePlaylistBytton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:onClick="deletePlaylist"
+            android:padding="5dp"
+            android:text="Удалить плейлист" />
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/editPlaylistMenu"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_centerInParent="true"
+        android:layout_marginStart="75dp"
+        android:layout_marginEnd="75dp"
+        android:background="@drawable/overmenu_background"
+        android:orientation="vertical"
+        android:padding="10dp"
+        android:visibility="gone">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:padding="5dp"
+            android:text="Введите новое название"
+            android:textColor="@color/lightText" />
+
+        <android.support.design.widget.TextInputLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <android.support.design.widget.TextInputEditText
+                android:id="@+id/playlistNameEdit"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:hint="Название" />
+        </android.support.design.widget.TextInputLayout>
+
+        <Button
+            android:id="@+id/editPlaylistNameButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="end"
+            android:onClick="editPlaylist"
+            android:padding="5dp"
+            android:text="Переименовать" />
+
+    </LinearLayout>
+</RelativeLayout>
+

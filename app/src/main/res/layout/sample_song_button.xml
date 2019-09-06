@@ -1,0 +1,53 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:layout_width="match_parent"
+    android:layout_height="195px"
+    android:background="@drawable/button">
+
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="175px"
+        android:layout_height="175px"
+        android:layout_marginStart="10px"
+        android:layout_marginTop="10px"
+        android:layout_marginEnd="10px"
+        android:layout_marginBottom="10px"
+        android:scaleType="centerCrop"
+        app:srcCompat="@drawable/hibike_black" />
+
+    <TextView
+        android:id="@+id/nameView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10px"
+        android:layout_marginEnd="10px"
+        android:layout_toEndOf="@id/imageView"
+        android:maxLines="1"
+        android:textColor="@color/lightText" />
+
+    <TextView
+        android:id="@+id/authorAndAlbumView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/nameView"
+        android:layout_toStartOf="@id/durationView"
+        android:layout_toEndOf="@id/imageView"
+        android:maxLines="2" />
+
+    <TextView
+        android:id="@+id/durationView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentEnd="true"
+        android:layout_alignParentBottom="true"
+        android:layout_marginStart="10px"
+        android:layout_marginTop="10px"
+        android:layout_marginEnd="10px"
+        android:layout_marginBottom="10px"
+        android:text="00:00" />
+
+    <Button
+        android:id="@+id/songButton"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+</RelativeLayout>

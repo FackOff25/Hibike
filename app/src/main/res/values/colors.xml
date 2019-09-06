@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="colorPrimary">#555555</color>
+    <color name="colorPrimaryDark">#494949</color>
+    <color name="colorAccent">#3C7725</color>
+    <color name="lightText">#FFFFFF</color>
+    <color name="shadowText">#CCCCCC</color>
+    <color name="themeToolbarColor">@android:color/transparent</color>
+</resources>
