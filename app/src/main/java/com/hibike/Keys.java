@@ -18,8 +18,9 @@ public class Keys {
         String PLAYLISTS="com.hibikeplayer.settings.playlist";
         String SELECTED_SONGS="com.hibikeplayer.settings.selectedsongs";
         String ALL_SONGS="com.hibikeplayer.settings.allsongs";
-        String IS_PLAY="com.hibikeplayer.settings.allsongs.isplay";
-        String IS_RANDOM="com.hibikeplayer.settings.allsongs.israndom";
+        String IS_PLAY="com.hibikeplayer.settings.isplay";
+        String IS_RANDOM="com.hibikeplayer.settings.israndom";
+        String FIRST_LOAD="com.hibikeplayer.settings.allsongs.israndom";
     }
 
     public interface Notification {

@@ -9,6 +9,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.util.Arrays;
 
 
 class PrimaryMusicData{
@@ -27,7 +28,8 @@ class PrimaryMusicData{
         else {
             int chr;
             boolean hasEnd=false;
-            fin.skip(7);
+            int ver=fin.read();
+            fin.skip(6);
             arrayForTags=new byte[4];
             fin.read(arrayForTags);
             tag=new String(arrayForTags, StandardCharsets.US_ASCII);
@@ -37,56 +39,28 @@ class PrimaryMusicData{
                 int size=intFromBinar(tagSize);
                 fin.skip(2);
                 byte[] arrayFiller;
-                Charset encoder=StandardCharsets.ISO_8859_1;
+                Charset encoder;
                 switch (tag){
                     case "TIT2":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicName=new String(arrayFiller,encoder);
                         break;
                     case "TPE1":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicAuthor=new String(arrayFiller,encoder);
                         break;
                     case "TALB":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicAlbum=new String(arrayFiller,encoder);
                         break;
                     case "APIC":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         imageName="";
                         String fullFileName=music.getName();
                         for (int count=0;fullFileName.toCharArray()[count]!='.';count++) imageName+=fullFileName.toCharArray()[count];
@@ -98,7 +72,7 @@ class PrimaryMusicData{
                             if (chr!=0) imageName+=(char) chr;
                         }while (chr!=0);
                         fin.read(); size--;
-                        if (encoder.equals(StandardCharsets.ISO_8859_1)){
+                        if (encoder.equals(StandardCharsets.ISO_8859_1)||encoder.equals(StandardCharsets.UTF_8)){
                         do{
                             chr=fin.read();
                             size--;
@@ -289,7 +263,8 @@ class PrimaryMusicData{
         else {
             int chr;
             boolean hasEnd=false;
-            fin.skip(7);
+            int ver=fin.read();
+            fin.skip(6);
             arrayForTags=new byte[4];
             fin.read(arrayForTags);
             tag=new String(arrayForTags, StandardCharsets.US_ASCII);
@@ -299,17 +274,10 @@ class PrimaryMusicData{
                 int size=intFromBinar(tagSize);
                 fin.skip(2);
                 byte[] arrayFiller;
-                Charset encoder=StandardCharsets.ISO_8859_1;
+                Charset encoder;
                 switch (tag){
                     case "TIT2":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         name=new String(arrayFiller,encoder);
@@ -426,6 +394,35 @@ class PrimaryMusicData{
             return name;
         }
     }
+    private Charset getCharset(int version,BufferedInputStream fin) throws IOException{
+        Charset encoder=StandardCharsets.ISO_8859_1;
+        if (version<4){
+            switch(fin.read()){
+                case 0:
+                    encoder=StandardCharsets.ISO_8859_1;
+                    break;
+                case 1:
+                    encoder=StandardCharsets.UTF_16;
+                    break;
+            }
+        }else{
+            switch(fin.read()){
+                case 0:
+                    encoder=StandardCharsets.ISO_8859_1;
+                    break;
+                case 1:
+                    encoder=StandardCharsets.UTF_16;
+                    break;
+                case 2:
+                    encoder=StandardCharsets.UTF_16BE;
+                    break;
+                case 3:
+                    encoder=StandardCharsets.UTF_8;
+                    break;
+            }
+        }
+        return encoder;
+    }
 }
 class SecondaryMusicData{
     public boolean haveTags=true;
@@ -445,7 +442,8 @@ class SecondaryMusicData{
         else {
             int chr;
             boolean hasEnd=false;
-            fin.skip(7);
+            int ver=fin.read();
+            fin.skip(6);
             arrayForTags=new byte[4];
             fin.read(arrayForTags);
             tag=new String(arrayForTags, StandardCharsets.US_ASCII);
@@ -456,88 +454,49 @@ class SecondaryMusicData{
                 byte[] flags=new byte[2];
                 fin.read(flags);
                 byte[] arrayFiller;
-                Charset encoder=StandardCharsets.ISO_8859_1;
+                Charset encoder;
                 switch (tag){
                     case "TIT2":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin.read());
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicName=new String(arrayFiller,encoder);
                         break;
                     case "TPE1":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin.read());
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicAuthor=new String(arrayFiller,encoder);
                         break;
                     case "TALB":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin.read());
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicAlbum=new String(arrayFiller,encoder);
                         break;
                     case "USLT":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin.read());
                         arrayFiller=new byte[3];
                         fin.read(arrayFiller);
                         musicLyricsLanguage=new String(arrayFiller,encoder);
                         size-=3;
-                        if (encoder.equals(StandardCharsets.ISO_8859_1)){
+                        if (encoder.equals(StandardCharsets.ISO_8859_1)||encoder.equals(StandardCharsets.UTF_8)){
                             do{
                                 chr=fin.read();
                                 size--;
                             }while (chr!=0);
                         }else{
-                            chr=fin.read();
-                            size--;
-                            while (chr!=0){
-                                fin.read();
+                            do{ fin.read();
                                 chr=fin.read();
                                 size-=2;
-                            }
-                            fin.read();size--;
+                            }while (chr!=0);
                         }
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicLyrics=new String(arrayFiller,encoder);
                         break;
                     case "APIC":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin.read());
                         imageName="";
                         String fullFileName=music.getName();
                         for (int count=0;fullFileName.toCharArray()[count]!='.';count++) imageName+=fullFileName.toCharArray()[count];
@@ -549,22 +508,18 @@ class SecondaryMusicData{
                             if (chr!=0) imageName+=(char) chr;
                         }while (chr!=0);
                         fin.read(); size--;
-                        if (encoder.equals(StandardCharsets.ISO_8859_1)){
+                        if (encoder.equals(StandardCharsets.ISO_8859_1)||encoder.equals(StandardCharsets.UTF_8)){
                             do{
                                 chr=fin.read();
                                 size--;
                             }while (chr!=0);
                         }else{
-                            chr=fin.read();
-                            size--;
-                            while (chr!=0){
-                                fin.read();
+                            do{ fin.read();
                                 chr=fin.read();
                                 size-=2;
-                            }
-                            fin.read();
+                            }while (chr!=0);
                         }
-                        FileOutputStream fos=context.openFileOutput(imageName,Context.MODE_PRIVATE);
+                        FileOutputStream fos=context.openFileOutput(imageName,Context.MODE_APPEND);
                         arrayFiller=new byte[size];
                         fin.read(arrayFiller);
                         fos.write(arrayFiller);
@@ -681,6 +636,35 @@ class SecondaryMusicData{
         }
         return result;
     }
+    private Charset getCharset(int version,int chr) {
+        Charset encoder=StandardCharsets.ISO_8859_1;
+        if (version<4){
+            switch(chr){
+                case 0:
+                    encoder=StandardCharsets.ISO_8859_1;
+                    break;
+                case 1:
+                    encoder=StandardCharsets.UTF_16;
+                    break;
+            }
+        }else{
+            switch(chr){
+                case 0:
+                    encoder=StandardCharsets.ISO_8859_1;
+                    break;
+                case 1:
+                    encoder=StandardCharsets.UTF_16;
+                    break;
+                case 2:
+                    encoder=StandardCharsets.UTF_16BE;
+                    break;
+                case 3:
+                    encoder=StandardCharsets.UTF_8;
+                    break;
+            }
+        }
+        return encoder;
+    }
     public byte[] getSizeOfFrame(int size){
         byte[] array={0,0,0,0};
         int maxStap;
@@ -727,7 +711,6 @@ class SecondaryMusicData{
         }
         return array;
     }
-
 }
 class TertiaryMusicData{
     public boolean haveTags=true;
@@ -746,16 +729,17 @@ class TertiaryMusicData{
         byte[] arrayForTags=new byte[3];
         fin.read(arrayForTags);
         String tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+        FileOutputStream forOtherTags=context.openFileOutput("TagsRecord.cut",Context.MODE_APPEND);
         if (!tag.equals("ID3")) haveTags=false;
         else {
             int chr;
             boolean hasEnd=false;
             allTagsSize=0;
-            fin.skip(7);
+            int ver=fin.read();
+            fin.skip(6);
             arrayForTags=new byte[4];
             fin.read(arrayForTags);
             tag=new String(arrayForTags, StandardCharsets.US_ASCII);
-            FileOutputStream forOtherTags=context.openFileOutput("TagsRecord.cut",Context.MODE_APPEND);
             while (!hasEnd){
                 String tagSize="";
                 for(int count=0;count<4;count++) tagSize+=String.format("%8s", Integer.toBinaryString(fin.read() & 0xFF)).replace(" ", "0");
@@ -765,88 +749,49 @@ class TertiaryMusicData{
                 byte[] flags=new byte[2];
                 fin.read(flags);
                 byte[] arrayFiller;
-                Charset encoder=StandardCharsets.ISO_8859_1;
+                Charset encoder;
                 switch (tag){
                     case "TIT2":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicName=new String(arrayFiller,encoder);
                         break;
                     case "TPE1":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicAuthor=new String(arrayFiller,encoder);
                         break;
                     case "TALB":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicAlbum=new String(arrayFiller,encoder);
                         break;
                     case "USLT":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         arrayFiller=new byte[3];
                         fin.read(arrayFiller);
                         musicLyricsLanguage=new String(arrayFiller,encoder);
                         size-=3;
-                        if (encoder.equals(StandardCharsets.ISO_8859_1)){
+                        if (encoder.equals(StandardCharsets.ISO_8859_1)||encoder.equals(StandardCharsets.UTF_8)){
                             do{
                                 chr=fin.read();
                                 size--;
                             }while (chr!=0);
                         }else{
-                            chr=fin.read();
-                            size--;
-                            while (chr!=0){
-                                fin.read();
+                            do{ fin.read();
                                 chr=fin.read();
                                 size-=2;
-                            }
-                            fin.read();size--;
+                            }while (chr!=0);
                         }
                         arrayFiller=new byte[size-1];
                         fin.read(arrayFiller);
                         musicLyrics=new String(arrayFiller,encoder);
                         break;
                     case "APIC":
-                        switch(fin.read()){
-                            case 0:
-                                encoder=StandardCharsets.ISO_8859_1;
-                                break;
-                            case 1:
-                                encoder=StandardCharsets.UTF_16;
-                                break;
-                        }
+                        encoder=getCharset(ver,fin);
                         imageName="";
                         String fullFileName=music.getName();
                         for (int count=0;fullFileName.toCharArray()[count]!='.';count++) imageName+=fullFileName.toCharArray()[count];
@@ -858,20 +803,16 @@ class TertiaryMusicData{
                             if (chr!=0) imageName+=(char) chr;
                         }while (chr!=0);
                         fin.read(); size--;
-                        if (encoder.equals(StandardCharsets.ISO_8859_1)){
+                        if (encoder.equals(StandardCharsets.ISO_8859_1)||encoder.equals(StandardCharsets.UTF_8)){
                             do{
                                 chr=fin.read();
                                 size--;
                             }while (chr!=0);
                         }else{
-                            chr=fin.read();
-                            size--;
-                            while (chr!=0){
-                                fin.read();
+                            do{ fin.read();
                                 chr=fin.read();
                                 size-=2;
-                            }
-                            fin.read();
+                            }while (chr!=0);
                         }
                         FileOutputStream fos=context.openFileOutput(imageName,Context.MODE_APPEND);
                         arrayFiller=new byte[size];
@@ -1042,5 +983,34 @@ class TertiaryMusicData{
 
         }
         return array;
+    }
+    private Charset getCharset(int version,BufferedInputStream fin) throws IOException{
+        Charset encoder=StandardCharsets.ISO_8859_1;
+        if (version<4){
+            switch(fin.read()){
+                case 0:
+                    encoder=StandardCharsets.ISO_8859_1;
+                    break;
+                case 1:
+                    encoder=StandardCharsets.UTF_16;
+                    break;
+            }
+        }else{
+            switch(fin.read()){
+                case 0:
+                    encoder=StandardCharsets.ISO_8859_1;
+                    break;
+                case 1:
+                    encoder=StandardCharsets.UTF_16;
+                    break;
+                case 2:
+                    encoder=StandardCharsets.UTF_16BE;
+                    break;
+                case 3:
+                    encoder=StandardCharsets.UTF_8;
+                    break;
+            }
+        }
+        return encoder;
     }
 }

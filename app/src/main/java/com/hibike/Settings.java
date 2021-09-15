@@ -72,6 +72,11 @@ public class Settings {
         editor.putString(REPLAY_MODE,replayMode);
         editor.apply();
     }
+    public void setNotFirstLoad(){
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putBoolean(FIRST_LOAD,false);
+        editor.apply();
+    }
 
 
     public File[] getAllSongs(){
@@ -180,5 +185,9 @@ public class Settings {
         if (settings.contains(REPLAY_MODE)) replayMode=settings.getString(REPLAY_MODE,null);
         return replayMode;
     }
-
+    public boolean getIsFirstLoad(){
+        boolean isFirstLoad=true;
+        if (settings.contains(FIRST_LOAD)) isFirstLoad=settings.getBoolean(FIRST_LOAD,false);
+        return isFirstLoad;
+    }
 }

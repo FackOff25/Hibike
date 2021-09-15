@@ -27,7 +27,6 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.text.method.ScrollingMovementMethod;
 import android.util.DisplayMetrics;
-import android.util.Log;
 import android.view.Display;
 import android.view.Gravity;
 import android.view.View;
@@ -48,8 +47,11 @@ import android.widget.Toast;
 
 import com.sothree.slidinguppanel.SlidingUpPanelLayout;
 
+import java.io.BufferedInputStream;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
@@ -82,8 +84,63 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         setContentView(R.layout.activity_main);
         getWindow().addFlags(WindowManager.LayoutParams.FLAG_LAYOUT_NO_LIMITS);
         settings=new Settings(this);
-        FolderScanner scanner=new FolderScanner();
-        scanner.execute(Environment.getExternalStorageDirectory());
+        if (settings.getIsFirstLoad()){
+            getPermissoin();
+            int permissionStatus = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+            while (permissionStatus!=PackageManager.PERMISSION_GRANTED) {
+                try {
+                    synchronized(this) {
+                        this.wait(2000);
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+                permissionStatus = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
+                getPermissoin();
+            }
+            File[] files={Environment.getExternalStorageDirectory()};
+            ArrayList<File> allSongsPlaylist;
+            class Scanning{
+                public ArrayList<File> allSongsPlaylist=new ArrayList<>();
+                public void scanFolder(File folder){
+                    if (folder.isDirectory()){
+                        FilenameFilter filter = new FilenameFilter() {
+                            public boolean accept(File directory, String fileName) {
+                                File file=new File(directory+"/"+fileName);
+                                return fileName.endsWith(".mp3")||file.isDirectory();
+                            }
+                        };
+                        File[] folderFiles=folder.listFiles(filter);
+                        if (folderFiles.length>0){
+                            for (File item:folderFiles){
+                                if (item.isDirectory()) {scanFolder(item);}
+                                else {allSongsPlaylist.add(item);}
+                            }}
+                    }
+                }
+                public ArrayList<File> getAllSongsPlaylist(){
+                    return allSongsPlaylist;
+                }
+            }
+            Scanning scanning=new Scanning();
+            for (File folder:files){
+                scanning.scanFolder(folder);
+            }
+            allSongsPlaylist=sortByName(scanning.getAllSongsPlaylist());
+            File[] playlist=allSongsPlaylist.toArray(new File[allSongsPlaylist.size()]);
+            String playlistString="";
+            for (File file:playlist){
+                if (file!=null) playlistString+=">>"+file.getAbsolutePath();
+            }
+            SharedPreferences settings2=getSharedPreferences(SETTINGS_NAME,Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = settings2.edit();
+            editor.putString(ALL_SONGS,playlistString);
+            editor.apply();
+            settings.setNotFirstLoad();
+        }else{
+            FolderScanner scanner=new FolderScanner();
+            scanner.execute(Environment.getExternalStorageDirectory());
+        }
         settings.setPlaylist(settings.getPlayingPlayListName(),settings.getPlayingPlayList());
         Intent startIntent = new Intent(MainActivity.this, HibikeService.class);
         startIntent.setAction(START_FOREGROUND);
@@ -155,8 +212,10 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
 
         String playlistName=settings.getOpenedPlaylist();
         if (playlistName.equals(ALL_SONGS)) playlistName=getString(R.string.all_songs);
-        Button playlistNameSign=(Button) findViewById(R.id.playlistName);
-        playlistNameSign.setText(playlistName);
+        String playingPlaylistName=settings.getPlayingPlayListName();
+        if (playlistName.equals(ALL_SONGS)) playlistName=getString(R.string.all_songs);
+        changeSlidingPlaylistSign(playlistName);
+
         File[] playingPlayList;
         LinearLayout playlistLayout=(LinearLayout) findViewById(R.id.playlistsLayout);
         for (int count=0;count<playlistLayout.getChildCount();count++){
@@ -201,23 +260,23 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
                 switch (newState){
                     case EXPANDED:
                         findViewById(R.id.hidePanelButton).setVisibility(View.VISIBLE);
-                        findViewById(R.id.playlistButton).setVisibility(View.VISIBLE);
+                        findViewById(R.id.playlistSlidingSign).setVisibility(View.VISIBLE);
                         findViewById(R.id.editButton).setVisibility(View.VISIBLE);
                         findViewById(R.id.shakeButton).setVisibility(View.VISIBLE);
                         findViewById(R.id.replayButton).setVisibility(View.VISIBLE);
                         findViewById(R.id.playButton).setVisibility(View.GONE);
                         RelativeLayout.LayoutParams params=new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,RelativeLayout.LayoutParams.WRAP_CONTENT);
                         params.addRule(RelativeLayout.BELOW,R.id.hidePanelButton);
-                        params.addRule(RelativeLayout.ALIGN_LEFT,R.id.playlistButton);
+                        params.addRule(RelativeLayout.ALIGN_LEFT,R.id.playlistSlidingSign);
                         findViewById(R.id.songName).setLayoutParams(params);
                         params=new RelativeLayout.LayoutParams(RelativeLayout.LayoutParams.MATCH_PARENT,45);
                         params.addRule(RelativeLayout.BELOW,R.id.songName);
-                        params.addRule(RelativeLayout.ALIGN_LEFT,R.id.playlistButton);
+                        params.addRule(RelativeLayout.ALIGN_LEFT,R.id.playlistSlidingSign);
                         findViewById(R.id.songAuthor).setLayoutParams(params);
                         break;
                     case COLLAPSED:
                         findViewById(R.id.hidePanelButton).setVisibility(View.GONE);
-                        findViewById(R.id.playlistButton).setVisibility(View.GONE);
+                        findViewById(R.id.playlistSlidingSign).setVisibility(View.GONE);
                         findViewById(R.id.editButton).setVisibility(View.GONE);
                         findViewById(R.id.shakeButton).setVisibility(View.GONE);
                         findViewById(R.id.replayButton).setVisibility(View.GONE);
@@ -342,7 +401,9 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         }
         TextView songDuration=(TextView) findViewById(R.id.songDuration);
         MediaMetadataRetriever data=new MediaMetadataRetriever();
+        try{
         data.setDataSource(song.getAbsolutePath());
+        }catch (IllegalArgumentException e){}
         String durStr=data.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
         long dur = Long.parseLong(durStr);
         int minuts=Math.round(dur/60000);
@@ -415,7 +476,6 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         }
     }
 
-
     private void addToPlaylist(String playlistName,ArrayList<File> songs){
         int index=settings.getPlaylistsNames().indexOf(playlistName);
         ArrayList<String> playlists=settings.getPlaylists();
@@ -432,10 +492,9 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         ArrayList<String> playlistList=new ArrayList<>();
         playlistList.addAll(Arrays.asList(playlistStrings));
         for (File song:selectedSongs){
-            String path=""+song;
+            String path=""+song.getAbsolutePath();
             playlistList.remove(path);
         }
-        LinearLayout mainLayout=(LinearLayout) findViewById(R.id.mainLayout);
         String newPlaylist="";
         for (String path:playlistList){
             newPlaylist+=">>"+path;
@@ -447,9 +506,6 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         String playlistName=settings.getOpenedPlaylist();
         File[] playingPlayList;
         LinearLayout playlistLayout=(LinearLayout) findViewById(R.id.playlistsLayout);
-        Button playlistNameSign=(Button) findViewById(R.id.playlistName);
-        if (playlistName.equals(ALL_SONGS)) playlistNameSign.setText(getString(R.string.all_songs));
-        else playlistNameSign.setText(playlistName);
         for (int count=0;count<playlistLayout.getChildCount();count++){
             Button btn=(Button) playlistLayout.getChildAt(count);
             String btnText=btn.getText().toString();
@@ -566,9 +622,10 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         EditText newName=(EditText) findViewById(R.id.playlistNameEdit);
         playlistsNames.set(playlistsNames.indexOf(settings.getOpenedPlaylist()),newName.getText().toString());
         settings.setPlaylists(playlistsNames);
-        Button playlistName=(Button) findViewById(R.id.playlistName);
-        playlistName.setText(newName.getText().toString());
-
+        changeMainPlaylistSign(newName.getText().toString());
+        if(settings.getPlayingPlayListName().equals(settings.getOpenedPlaylist())){
+            changeSlidingPlaylistSign(newName.getText().toString());
+        }
         LinearLayout playlistLayout=(LinearLayout) findViewById(R.id.playlistsLayout);
         for (int count=0;count<playlistLayout.getChildCount();count++){
             Button btn=(Button) playlistLayout.getChildAt(count);
@@ -605,9 +662,15 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         if (!playlistName.equals(settings.getOpenedPlaylist())){
         File[] playingPlayList;
         LinearLayout playlistLayout=(LinearLayout) findViewById(R.id.playlistsLayout);
-        Button playlistNameSign=(Button) findViewById(R.id.playlistName);
-        if (playlistName.equals(ALL_SONGS)) playlistNameSign.setText(getString(R.string.all_songs));
-        else playlistNameSign.setText(playlistName);
+
+        if (playlistName.equals(ALL_SONGS)) {
+            changeMainPlaylistSign(getString(R.string.all_songs));
+            changeSlidingPlaylistSign(getString(R.string.all_songs));
+            }
+        else {
+            changeMainPlaylistSign(playlistName);
+            changeSlidingPlaylistSign(playlistName);
+        }
         for (int count=0;count<playlistLayout.getChildCount();count++){
             Button btn=(Button) playlistLayout.getChildAt(count);
             String btnText=btn.getText().toString();
@@ -635,6 +698,14 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
             slidingPaneLayout.closePane();
         }
     }
+    private void changeMainPlaylistSign(String newName){
+        Button playlistNameSign=(Button) findViewById(R.id.playlistMainSign);
+        playlistNameSign.setText(newName);
+    }
+    private void changeSlidingPlaylistSign(String newName){
+        TextView playlistNameSignSliding=(TextView) findViewById(R.id.playlistSlidingSign);
+        playlistNameSignSliding.setText(newName);
+    }
     private File[] toPlaylist(@NonNull String[] paths){
         File[] playlist=new File[paths.length];
         for(int count=0;count<playlist.length;count++)playlist[count]=new File(paths[count]);
@@ -660,6 +731,7 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
             if (settings.getSelectedSongs().isEmpty()) editingSong=settings.getPlayingSong();
             else editingSong=settings.getSelectedSongs().get(0);
             musicData.tertiarySearch(editingSong,this);
+
         }catch (IOException e){e.printStackTrace();}
         EditText editText=(EditText) findViewById(R.id.songNameEdit);
         if (musicData.musicName!=null) editText.setText(musicData.musicName);
@@ -674,7 +746,8 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         if (musicData.imageName!=null){
             ImageButton image=(ImageButton) findViewById(R.id.songImageEdit);
             image.setImageDrawable(Drawable.createFromPath(getApplicationContext().getFilesDir().getAbsolutePath()+"/"+musicData.imageName));
-            imagePath=getApplicationContext().getFilesDir().getAbsolutePath()+"/"+musicData.imageName;
+            imagePath=getFilesDir().getAbsolutePath()+"/"+musicData.imageName;
+            makeMessage(imagePath);
         }
         ScrollView editPanel=(ScrollView) findViewById(R.id.editPanel);
         editPanel.setVisibility(View.VISIBLE);
@@ -719,10 +792,39 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
         String newLyrics=editText.getText().toString();
         ReplaceMusicData replaycer=new ReplaceMusicData();
         try{
+            makeBackUp(editingSong);
             replaycer.replace(editingSong,newName,newAuthor,newAlbum,newKind,newLyrics,"   ",newImage,this);
-            setSong(editingSong);
-        }catch (IOException e){}
+            if (settings.getSelectedSongs().isEmpty()) setSong(editingSong);
+        }catch (IOException e){e.printStackTrace();}
         closeEditPanel(null);
+    }
+    private void makeBackUp(File song){
+        try{
+            FileInputStream f=new FileInputStream(song);
+            BufferedInputStream fin=new BufferedInputStream(f);
+            FileOutputStream fos=openFileOutput(song.getName(),MODE_PRIVATE);
+            byte[] forCopy=new byte[fin.available()];
+            fin.read(forCopy);
+            fin.close();
+            f.close();
+            fos.write(forCopy);
+            fos.close();
+        }catch (FileNotFoundException e){ makeMessage("Файл потерян");
+        }catch (IOException e){reviveFromBackUp(song); makeMessage("Произошла какая-то ошибка, попробуйте снова...или не пробуйте, я надпись, а не начальник");}
+    }
+    private void reviveFromBackUp(File song){
+        try{
+            FileInputStream f=openFileInput(song.getName());
+            BufferedInputStream fin=new BufferedInputStream(f);
+            FileOutputStream fos=new FileOutputStream(song);
+            byte[] forCopy=new byte[fin.available()];
+            fin.read(forCopy);
+            fin.close();
+            f.close();
+            fos.write(forCopy);
+            fos.close();
+        }catch (FileNotFoundException e){ makeMessage("Файл потерян");
+        }catch (IOException e){makeMessage("Бекап потерян");}
     }
     public void showSongMenu(){
         LinearLayout songMenu=(LinearLayout) findViewById(R.id.songMenu);
@@ -842,23 +944,25 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
 
         protected void onProgressUpdate(File... music) {
             super.onProgressUpdate(music);
-            songCount++;
+
             final File song=music[0];
-            final SongButton newButton=new SongButton(MainActivity.this,song);
-            newButton.setOnLongClickListener(new View.OnLongClickListener() {
-                @Override
-                public boolean onLongClick(View v) {
-                    ArrayList<File> selectedSongs=settings.getSelectedSongs();
-                    if(!selectedSongs.contains(newButton.getSong())){
-                        newButton.getChildAt(0).setBackgroundColor(getColor(R.color.colorAccent));
-                        selectedSongs.add(newButton.getSong());
-                        settings.setSelectedSongs(selectedSongs);
+            try{
+            final SongButton newButton=new SongButton(MainActivity.this,song);newButton.setOnLongClickListener(new View.OnLongClickListener() {
+                    @Override
+                    public boolean onLongClick(View v) {
+                        ArrayList<File> selectedSongs=settings.getSelectedSongs();
+                        if(!selectedSongs.contains(newButton.getSong())){
+                            newButton.getChildAt(0).setBackgroundColor(getColor(R.color.colorAccent));
+                            selectedSongs.add(newButton.getSong());
+                            settings.setSelectedSongs(selectedSongs);
+                        }
+                        showSongMenu();
+                        return true;
                     }
-                    showSongMenu();
-                    return true;
-                }
-            });
-            playlistLayout.addView(newButton,new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,195));
+                });
+                songCount++;
+                playlistLayout.addView(newButton,new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,195));
+            }catch (RuntimeException e){e.printStackTrace();}
             }
     }
     class FolderScanner extends AsyncTask<File, Void, Void> {

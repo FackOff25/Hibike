@@ -23,6 +23,7 @@ import java.util.HashSet;
 import static com.hibike.Keys.Notification.PATH_EXTRA;
 import static com.hibike.Keys.Notification.PLAY_THIS_SONG;
 import static com.hibike.Keys.Settings.*;
+
 public class SongButton extends RelativeLayout {
     private File buttonSong;
     private String songName;

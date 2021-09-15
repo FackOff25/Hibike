@@ -1,5 +1,6 @@
 package com.hibike;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -62,6 +63,7 @@ public class HibikeService extends Service implements AudioManager.OnAudioFocusC
         mediaPlayer.seekTo(settings.getTime());
         settings.setIsPlay(false);
     }
+    @SuppressLint("LongLogTag")
     public int onStartCommand(Intent intent, int flags, int startId) {
         switch (intent.getAction()){
             case START_FOREGROUND:
@@ -162,27 +164,58 @@ public class HibikeService extends Service implements AudioManager.OnAudioFocusC
         editor.apply();
     }
     private void nextSong(){
-        try {
-            File[] playlist=settings.getPlayingPlayList();
-            int songIsPlay=Arrays.asList(playlist).indexOf(settings.getPlayingSong())+1;
-            if (songIsPlay>=playlist.length) songIsPlay=0;
-            if (playlist[songIsPlay].getName().endsWith(".mp3")){
-            setSong(playlist[songIsPlay]);
-            startPlay();
+        File[] playlist=settings.getPlayingPlayList();
+        int songIsPlay=Arrays.asList(playlist).indexOf(settings.getPlayingSong())+1;
+        if (songIsPlay>=playlist.length) songIsPlay=0;
+        if (playlist[songIsPlay].getName().endsWith(".mp3")){
+            boolean gotya=false;
+            for (int count=0;!gotya&&count<10;count++){
+            try{
+                setSong(playlist[songIsPlay]);
+                gotya=true;
+            }catch (IOException e){}
             }
-        }catch (IOException e){nextSong();}
+            if(!gotya) nextSong();
+            startPlay();
+        }
+
+
     }
     private void previousSong(){
-        try {
-            int songIsPlay=Arrays.asList(settings.getPlayingPlayList()).indexOf(settings.getPlayingSong())-1;
-            if (songIsPlay<0) {
-                songIsPlay=settings.getPlayingPlayList().length-1;
-                setSong(settings.getPlayingPlayList()[songIsPlay]);
-            }else{
-                setSong(settings.getPlayingPlayList()[songIsPlay]);
+        if (mediaPlayer.getCurrentPosition()<=10000){
+        int songIsPlay=Arrays.asList(settings.getPlayingPlayList()).indexOf(settings.getPlayingSong())-1;
+        if (songIsPlay<0) {
+            songIsPlay=settings.getPlayingPlayList().length-1;
+            boolean gotya=false;
+            for (int count=0;!gotya&&count<10;count++){
+                try{
+                    setSong(settings.getPlayingPlayList()[songIsPlay]);
+                    gotya=true;
+                }catch (IOException e){}
             }
-            startPlay();
-        }catch (IOException e){previousSong();}
+            if(!gotya) previousSong();
+        }else{
+            boolean gotya=false;
+            for (int count=0;!gotya&&count<5;count++){
+                try{
+                    setSong(settings.getPlayingPlayList()[songIsPlay]);
+                    gotya=true;
+                }catch (IOException e){}
+            }
+            if(!gotya) previousSong();
+        }
+        startPlay();
+    }else{
+        boolean gotya=false;
+        for (int count=0;!gotya&&count<5;count++){
+            try{
+                setSong(settings.getPlayingSong());
+                gotya=true;
+            }catch (IOException e){}
+        }
+        if(!gotya) previousSong();
+        startPlay();
+    }
     }
     public void onCompletion(MediaPlayer mp) {
     try{
