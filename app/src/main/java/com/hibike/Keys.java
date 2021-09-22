@@ -6,6 +6,22 @@ public class Keys {
         String REPLAY_PLAYLIST="replay playlist";
         String REPLAY_SONG="replay song";
     }
+
+    public interface Songs{
+        String SONGS_SETTINGS_NAME="com.hibikeplayer.settings.songsettingsname";
+        String PLAYLISTS="playlists";
+        String PLAYLISTS_ID="playlistsid";
+        String PLAYLISTS_NAMES="playlistsnames";
+        String PLAYLIST_SONGS="_playlistsongs";
+        String PLAYLIST_NAME="_playlistname";
+        String SONG_PATH="_PATH";
+        String SONG_NAME="_NAME";
+        String SONG_AUTHOR="_AUTHOR";
+        String SONG_ALBUM="_ALBUM";
+        String SONG_DURATION="_DURATION";
+
+    }
+
     public interface Settings {
         String SETTINGS_NAME="com.hibikeplayer.settings.settingsname";
         String SONG_TIME="com.hibikeplayer.settings.songtime";
@@ -44,5 +60,10 @@ public class Keys {
         String PLAY_CHANGED="com.hibikeplayer.background.playchanged";
         String SET_TIME="com.hibikeplayer.background.settime";
         String CLOSE="com.hibikeplayer.background.close";
+    }
+
+    public interface Exceptions{
+        String NO_SONG_ID="Such song doesn't available";
+        String NO_SONG_ANYMORE="Such song doesn't exist anymore";
     }
 }
