@@ -6,8 +6,6 @@ import android.content.SharedPreferences;
 import java.util.ArrayList;
 import java.util.concurrent.CopyOnWriteArraySet;
 
-import static com.hibike.Keys.Exceptions.NO_SONG_ANYMORE;
-import static com.hibike.Keys.Exceptions.NO_SONG_ID;
 import static com.hibike.Keys.Songs.PLAYLISTS;
 import static com.hibike.Keys.Songs.PLAYLISTS_ID;
 import static com.hibike.Keys.Songs.PLAYLISTS_NAMES;
@@ -49,13 +47,15 @@ public class Playlist extends ArrayList<Song> {
     }
 
     public boolean add(int id) {
+        Song song;
         try{
-            Song song=new Song(id, context);
-        }catch (Exception(NO_SONG_ID), new Exception(NO_SONG_ANYMORE)){
-            //TODO:Make new Exceptions
+            song=new Song(id, context);
+        }catch (NoMoreSongException e){
+            return false;
+        }catch (NoSongFileException e){
             return false;
         }
-        return add(song);
+        return super.add(song);
     }
 
     @Override

@@ -947,10 +947,10 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
 
             final File song=music[0];
             try{
-            final SongButton newButton=new SongButton(MainActivity.this,song);newButton.setOnLongClickListener(new View.OnLongClickListener() {
+            final SongButton newButton=new SongButton(song, MainActivity.this);newButton.setOnLongClickListener(new View.OnLongClickListener() {
                     @Override
                     public boolean onLongClick(View v) {
-                        ArrayList<File> selectedSongs=settings.getSelectedSongs();
+                        ArrayList<Song> selectedSongs=settings.getSelectedSongs();
                         if(!selectedSongs.contains(newButton.getSong())){
                             newButton.getChildAt(0).setBackgroundColor(getColor(R.color.colorAccent));
                             selectedSongs.add(newButton.getSong());
@@ -962,7 +962,11 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
                 });
                 songCount++;
                 playlistLayout.addView(newButton,new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT,195));
-            }catch (RuntimeException e){e.printStackTrace();}
+            }catch (RuntimeException e){
+                e.printStackTrace();
+            }catch (IOException e){
+                e.printStackTrace();
+            }
             }
     }
     class FolderScanner extends AsyncTask<File, Void, Void> {

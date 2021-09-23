@@ -42,7 +42,7 @@ public class Settings {
         editor.putStringSet(PLAYLISTS,new HashSet<>(playlists));
         editor.apply();
     }
-    public void setSelectedSongs(ArrayList<File> selectedSongsFiles){
+    static public void setSelectedSongs(ArrayList<Song> selectedSongsFiles){
         ArrayList<String> selectedSongs=new ArrayList<>();
         for(int count=0;count<selectedSongsFiles.size();count++){
             selectedSongs.add(selectedSongsFiles.get(count).getAbsolutePath());
@@ -145,8 +145,8 @@ public class Settings {
         }
         return getAllSongs();
     }
-    public ArrayList<File> getSelectedSongs(){
-        ArrayList<File> selectedSongs=new ArrayList<>();
+    static public ArrayList<Song> getSelectedSongs(){
+        ArrayList<Song> selectedSongs=new ArrayList<>();
         if (settings.contains(SELECTED_SONGS)){
             ArrayList<String> selectedSongsString=new ArrayList<>();
             selectedSongsString.addAll(settings.getStringSet(SELECTED_SONGS,null));

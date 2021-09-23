@@ -61,9 +61,4 @@ public class Keys {
         String SET_TIME="com.hibikeplayer.background.settime";
         String CLOSE="com.hibikeplayer.background.close";
     }
-
-    public interface Exceptions{
-        String NO_SONG_ID="Such song doesn't available";
-        String NO_SONG_ANYMORE="Such song doesn't exist anymore";
-    }
 }
