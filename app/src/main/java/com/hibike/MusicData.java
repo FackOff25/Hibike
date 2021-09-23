@@ -18,6 +18,236 @@ class PrimaryMusicData{
     public String musicAuthor="Неизвестен";
     public String musicAlbum;
     public String imageName;
+
+    static public String getName(File music) throws IOException, NullPointerException{
+        String name="";
+        FileInputStream f=new FileInputStream(music);
+        BufferedInputStream fin=new BufferedInputStream(f);
+        byte[] arrayForTags=new byte[3];
+        fin.read(arrayForTags);
+        String tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+        if (!tag.equals("ID3")){String fullFileName=music.getName();
+            for (int count=0;fullFileName.toCharArray()[count]!='.';count++) name+=fullFileName.toCharArray()[count];
+            return name;
+        }else {
+            int chr;
+            boolean hasEnd=false;
+            int ver=fin.read();
+            fin.skip(6);    //Skipping of uninformative bytes
+            arrayForTags=new byte[4];
+            fin.read(arrayForTags);
+            tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+            while (!hasEnd){
+                String tagSize="";
+                for(int count=0;count<4;count++) tagSize+=String.format("%8s", Integer.toBinaryString(fin.read() & 0xFF)).replace(" ", "0");
+                int size=intFromBinar(tagSize);
+                fin.skip(2);
+                byte[] arrayFiller;
+                Charset encoder;
+                switch (tag){
+                    case "TIT2":
+                        encoder=getCharset(ver,fin);
+                        arrayFiller=new byte[size-1];
+                        fin.read(arrayFiller);
+                        name=new String(arrayFiller,encoder);
+                        hasEnd=true;
+                        break;
+                    case "TPE1":
+                    case "TALB":
+                    case "APIC":
+                    case "USLT":
+                    case "TCON":
+                        /*rare-usable tags*/
+                    case "AENC": case "COMM": case "COMR": case "ENCR": case "EQUA": case "ETCO":
+                    case "GEOB": case "GRID": case "IPLS": case "LINK": case "MCDI": case "MLLT":
+                    case "OWNE": case "PRIV": case "PCNT": case "POPM": case "POSS": case "RBUF":
+                    case "RVAD": case "RVRB": case "SYLT": case "SYTC": case "TBPM": case "TCOM":
+                    case "TCOP": case "TDAT": case "TDLY": case "TENC": case "TEXT": case "TFLT":
+                    case "TIME": case "TIT1": case "TIT3": case "TKEY": case "TLAN": case "TLEN":
+                    case "TMED": case "TOAL": case "TOFN": case "TOLY": case "TOPE": case "TORY":
+                    case "TOWN": case "TPE2": case "TPE3": case "TPE4": case "TPOS": case "TPUB":
+                    case "TRCK": case "TRDA": case "TRSN": case "TRSO": case "TSIZ": case "TSRC":
+                    case "TSSE": case "TYER": case "TXXX": case "UFID": case "USER": case "WCOM":
+                    case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY":
+                    case "WPUB": case "WXXX":
+                    /*Tags from ID3v2.4.0, but some SOB add them to ID3v2.3.0.
+                    Just skip and delete for prise of imperor!*/
+                    case "TSOT": case "TSOP": case "ASPI": case "EQU2": case "RVA2": case "SEEK":
+                    case "SIGN": case "TDEN": case "TDOR": case "TDRC": case "TDRL": case "TDTG":
+                    case "TIPL": case "TMCL": case "TMOO": case "TPRO": case "TSOA": case "TSST":
+                        fin.skip(size);
+                        break;
+                    default:
+                        hasEnd=true;
+                        break;
+                }
+                if (!hasEnd) {
+                    arrayForTags=new byte[4];
+                    fin.read(arrayForTags);
+                    tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+                }
+            }
+            fin.close();
+        }
+        if (!name.equals("")) return name;
+        else {String fullFileName=music.getName();
+            for (int count=0;fullFileName.toCharArray()[count]!='.';count++) name+=fullFileName.toCharArray()[count];
+            return name;
+        }
+    }
+    static public String getName(String path)throws IOException, NullPointerException{
+        return getName(new File(path));
+    }
+
+    static public String getAuthor(File music) throws IOException, NullPointerException{
+        String author="";
+        FileInputStream f=new FileInputStream(music);
+        BufferedInputStream fin=new BufferedInputStream(f);
+        byte[] arrayForTags=new byte[3];
+        fin.read(arrayForTags);
+        String tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+        if (!tag.equals("ID3")) return author;
+        else {
+            int chr;
+            boolean hasEnd=false;
+            int ver=fin.read();
+            fin.skip(6);    //Skipping of uninformative bytes
+            arrayForTags=new byte[4];
+            fin.read(arrayForTags);
+            tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+            while (!hasEnd){
+                String tagSize="";
+                for(int count=0;count<4;count++) tagSize+=String.format("%8s", Integer.toBinaryString(fin.read() & 0xFF)).replace(" ", "0");
+                int size=intFromBinar(tagSize);
+                fin.skip(2);
+                byte[] arrayFiller;
+                Charset encoder;
+                switch (tag){
+                    case "TPE1":
+                        encoder=getCharset(ver,fin);
+                        arrayFiller=new byte[size-1];
+                        fin.read(arrayFiller);
+                        author=new String(arrayFiller,encoder);
+                        break;
+                    case "TIT2":
+                    case "TALB":
+                    case "APIC":
+                    case "USLT":
+                    case "TCON":
+                        /*rare-usable tags*/
+                    case "AENC": case "COMM": case "COMR": case "ENCR": case "EQUA": case "ETCO":
+                    case "GEOB": case "GRID": case "IPLS": case "LINK": case "MCDI": case "MLLT":
+                    case "OWNE": case "PRIV": case "PCNT": case "POPM": case "POSS": case "RBUF":
+                    case "RVAD": case "RVRB": case "SYLT": case "SYTC": case "TBPM": case "TCOM":
+                    case "TCOP": case "TDAT": case "TDLY": case "TENC": case "TEXT": case "TFLT":
+                    case "TIME": case "TIT1": case "TIT3": case "TKEY": case "TLAN": case "TLEN":
+                    case "TMED": case "TOAL": case "TOFN": case "TOLY": case "TOPE": case "TORY":
+                    case "TOWN": case "TPE2": case "TPE3": case "TPE4": case "TPOS": case "TPUB":
+                    case "TRCK": case "TRDA": case "TRSN": case "TRSO": case "TSIZ": case "TSRC":
+                    case "TSSE": case "TYER": case "TXXX": case "UFID": case "USER": case "WCOM":
+                    case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY":
+                    case "WPUB": case "WXXX":
+                    /*Tags from ID3v2.4.0, but some SOB add them to ID3v2.3.0.
+                    Just skip and delete for prise of imperor!*/
+                    case "TSOT": case "TSOP": case "ASPI": case "EQU2": case "RVA2": case "SEEK":
+                    case "SIGN": case "TDEN": case "TDOR": case "TDRC": case "TDRL": case "TDTG":
+                    case "TIPL": case "TMCL": case "TMOO": case "TPRO": case "TSOA": case "TSST":
+                        fin.skip(size);
+                        break;
+                    default:
+                        hasEnd=true;
+                        break;
+                }
+                if (!hasEnd) {
+                    arrayForTags=new byte[4];
+                    fin.read(arrayForTags);
+                    tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+                }
+            }
+            fin.close();
+        }
+        return author;
+    }
+    static public String getAuthor(String path) throws IOException, NullPointerException{
+        return getAuthor(new File(path));
+    }
+
+    static public String getAlbum(File music) throws IOException, NullPointerException{
+        String album="";
+        FileInputStream f=new FileInputStream(music);
+        BufferedInputStream fin=new BufferedInputStream(f);
+        byte[] arrayForTags=new byte[3];
+        fin.read(arrayForTags);
+        String tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+        if (!tag.equals("ID3")) return album;
+        else {
+            int chr;
+            boolean hasEnd=false;
+            int ver=fin.read();
+            fin.skip(6);    //Skipping of uninformative bytes
+            arrayForTags=new byte[4];
+            fin.read(arrayForTags);
+            tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+            while (!hasEnd){
+                String tagSize="";
+                for(int count=0;count<4;count++) tagSize+=String.format("%8s", Integer.toBinaryString(fin.read() & 0xFF)).replace(" ", "0");
+                int size=intFromBinar(tagSize);
+                fin.skip(2);
+                byte[] arrayFiller;
+                Charset encoder;
+                switch (tag){
+                    case "TALB":
+                        encoder=getCharset(ver,fin);
+                        arrayFiller=new byte[size-1];
+                        fin.read(arrayFiller);
+                        album=new String(arrayFiller,encoder);
+                        break;
+                    case "TIT2":
+                    case "TPE1":
+                    case "APIC":
+                    case "USLT":
+                    case "TCON":
+                        /*rare-usable tags*/
+                    case "AENC": case "COMM": case "COMR": case "ENCR": case "EQUA": case "ETCO":
+                    case "GEOB": case "GRID": case "IPLS": case "LINK": case "MCDI": case "MLLT":
+                    case "OWNE": case "PRIV": case "PCNT": case "POPM": case "POSS": case "RBUF":
+                    case "RVAD": case "RVRB": case "SYLT": case "SYTC": case "TBPM": case "TCOM":
+                    case "TCOP": case "TDAT": case "TDLY": case "TENC": case "TEXT": case "TFLT":
+                    case "TIME": case "TIT1": case "TIT3": case "TKEY": case "TLAN": case "TLEN":
+                    case "TMED": case "TOAL": case "TOFN": case "TOLY": case "TOPE": case "TORY":
+                    case "TOWN": case "TPE2": case "TPE3": case "TPE4": case "TPOS": case "TPUB":
+                    case "TRCK": case "TRDA": case "TRSN": case "TRSO": case "TSIZ": case "TSRC":
+                    case "TSSE": case "TYER": case "TXXX": case "UFID": case "USER": case "WCOM":
+                    case "WCOP": case "WOAF": case "WOAR": case "WOAS": case "WORS": case "WPAY":
+                    case "WPUB": case "WXXX":
+                    /*Tags from ID3v2.4.0, but some SOB add them to ID3v2.3.0.
+                    Just skip and delete for prise of imperor!*/
+                    case "TSOT": case "TSOP": case "ASPI": case "EQU2": case "RVA2": case "SEEK":
+                    case "SIGN": case "TDEN": case "TDOR": case "TDRC": case "TDRL": case "TDTG":
+                    case "TIPL": case "TMCL": case "TMOO": case "TPRO": case "TSOA": case "TSST":
+                        fin.skip(size);
+                        break;
+                    default:
+                        hasEnd=true;
+                        break;
+                }
+                if (!hasEnd) {
+                    arrayForTags=new byte[4];
+                    fin.read(arrayForTags);
+                    tag=new String(arrayForTags, StandardCharsets.US_ASCII);
+                }
+            }
+            fin.close();
+        }
+        return album;
+    }
+    static public String getAlbum(String path) throws IOException, NullPointerException{
+        return getAlbum(new File(path));
+    }
+    static public String getImage(){
+
+    }
+
     public void primarySearch(File music,Context context) throws IOException,NullPointerException{
         FileInputStream f=new FileInputStream(music);
         BufferedInputStream fin=new BufferedInputStream(f);
@@ -199,7 +429,7 @@ class PrimaryMusicData{
             f.close();
         }
     }
-    public int intFromBinar(String str){
+    public static int intFromBinar(String str){
         int result=0;
         for (int count=str.length()-1;count>=0;count--) {
             if (str.toCharArray()[count]=='1')  result+=Math.pow(2,str.length()-count-1);
@@ -252,149 +482,8 @@ class PrimaryMusicData{
         }
         return array;
     }
-    public String getName(File music) throws IOException,NullPointerException{
-        String name="";
-        FileInputStream f=new FileInputStream(music);
-        BufferedInputStream fin=new BufferedInputStream(f);
-        byte[] arrayForTags=new byte[3];
-        fin.read(arrayForTags);
-        String tag=new String(arrayForTags, StandardCharsets.US_ASCII);
-        if (!tag.equals("ID3")) haveTags=false;
-        else {
-            int chr;
-            boolean hasEnd=false;
-            int ver=fin.read();
-            fin.skip(6);
-            arrayForTags=new byte[4];
-            fin.read(arrayForTags);
-            tag=new String(arrayForTags, StandardCharsets.US_ASCII);
-            while (!hasEnd){
-                String tagSize="";
-                for(int count=0;count<4;count++) tagSize+=String.format("%8s", Integer.toBinaryString(fin.read() & 0xFF)).replace(" ", "0");
-                int size=intFromBinar(tagSize);
-                fin.skip(2);
-                byte[] arrayFiller;
-                Charset encoder;
-                switch (tag){
-                    case "TIT2":
-                        encoder=getCharset(ver,fin);
-                        arrayFiller=new byte[size-1];
-                        fin.read(arrayFiller);
-                        name=new String(arrayFiller,encoder);
-                        hasEnd=true;
-                        break;
-                    case "TPE1":
-                    case "TALB":
-                    case "APIC":
-                    case "USLT":
-                    case "TCON":
-                    case "AENC"://rare-usable tags
-                    case "COMM":
-                    case "COMR":
-                    case "ENCR":
-                    case "EQUA":
-                    case "ETCO":
-                    case "GEOB":
-                    case "GRID":
-                    case "IPLS":
-                    case "LINK":
-                    case "MCDI":
-                    case "MLLT":
-                    case "OWNE":
-                    case "PRIV":
-                    case "PCNT":
-                    case "POPM":
-                    case "POSS":
-                    case "RBUF":
-                    case "RVAD":
-                    case "RVRB":
-                    case "SYLT":
-                    case "SYTC":
-                    case "TBPM":
-                    case "TCOM":
-                    case "TCOP":
-                    case "TDAT":
-                    case "TDLY":
-                    case "TENC":
-                    case "TEXT":
-                    case "TFLT":
-                    case "TIME":
-                    case "TIT1":
-                    case "TIT3":
-                    case "TKEY":
-                    case "TLAN":
-                    case "TLEN":
-                    case "TMED":
-                    case "TOAL":
-                    case "TOFN":
-                    case "TOLY":
-                    case "TOPE":
-                    case "TORY":
-                    case "TOWN":
-                    case "TPE2":
-                    case "TPE3":
-                    case "TPE4":
-                    case "TPOS":
-                    case "TPUB":
-                    case "TRCK":
-                    case "TRDA":
-                    case "TRSN":
-                    case "TRSO":
-                    case "TSIZ":
-                    case "TSRC":
-                    case "TSSE":
-                    case "TYER":
-                    case "TXXX":
-                    case "UFID":
-                    case "USER":
-                    case "WCOM":
-                    case "WCOP":
-                    case "WOAF":
-                    case "WOAR":
-                    case "WOAS":
-                    case "WORS":
-                    case "WPAY":
-                    case "WPUB":
-                    case "WXXX":
-                    case "TSOT"://Tags from ID3v2.4.0, but some SOB add them to ID3v2.3.0. Just skip and delete for prise of imperor!
-                    case "TSOP":
-                    case "ASPI":
-                    case "EQU2":
-                    case "RVA2":
-                    case "SEEK":
-                    case "SIGN":
-                    case "TDEN":
-                    case "TDOR":
-                    case "TDRC":
-                    case "TDRL":
-                    case "TDTG":
-                    case "TIPL":
-                    case "TMCL":
-                    case "TMOO":
-                    case "TPRO":
-                    case "TSOA":
-                    case "TSST":
-                        fin.skip(size);
-                        break;
-                    default:
-                        hasEnd=true;
-                        break;
-                }
-                if (!hasEnd) {
-                    arrayForTags=new byte[4];
-                    fin.read(arrayForTags);
-                    tag=new String(arrayForTags, StandardCharsets.US_ASCII);
-                }
-            }
-            fin.close();
-        }
-        if (!name.equals("")) return name;
-        else {String fullFileName=music.getName();
-            for (int count=0;fullFileName.toCharArray()[count]!='.';count++) name+=fullFileName.toCharArray()[count];
-            return name;
-        }
-    }
-    private Charset getCharset(int version,BufferedInputStream fin) throws IOException{
+
+    private static Charset getCharset(int version, BufferedInputStream fin) throws IOException{
         Charset encoder=StandardCharsets.ISO_8859_1;
         if (version<4){
             switch(fin.read()){
@@ -931,7 +1020,7 @@ class TertiaryMusicData{
 
         }
     }
-    public int intFromBinar(String str){
+    static public int intFromBinar(String str){
         int result=0;
         for (int count=str.length()-1;count>=0;count--) {
             if (str.toCharArray()[count]=='1')  result+=Math.pow(2,str.length()-count-1);
@@ -984,7 +1073,7 @@ class TertiaryMusicData{
         }
         return array;
     }
-    private Charset getCharset(int version,BufferedInputStream fin) throws IOException{
+    static private Charset getCharset(int version,BufferedInputStream fin) throws IOException{
         Charset encoder=StandardCharsets.ISO_8859_1;
         if (version<4){
             switch(fin.read()){

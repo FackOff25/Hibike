@@ -17,14 +17,14 @@ import static com.hibike.Keys.Songs.*;
 public class Song {
     //Technical
     public int id;
-    public String path;
+    private String path;
     final private Context context;
 
     //For user
-    public String name= NameSpace.Russian.SONG_NAME;
-    public String author=NameSpace.Russian.SONG_AUTHOR;
-    public String album=NameSpace.Russian.SONG_ALBUM;
-    public long duration=0;
+    private String name= NameSpace.Russian.SONG_NAME;
+    private String author=NameSpace.Russian.SONG_AUTHOR;
+    private String album=NameSpace.Russian.SONG_ALBUM;
+    private long duration=0;
 
     public Song(File song, Context _context) throws IOException {
         context=_context;
@@ -87,6 +87,28 @@ public class Song {
     public void play(){
         //TODO:Make intent method after Service revising
     }
+
+    /* Methods to give parameters*/
+    public String getPath(){
+        return path;
+    }
+
+    public String getName(){
+        return name;
+    }
+
+    public String getAuthor(){
+        return author;
+    }
+
+    public String getAlbum(){
+        return album;
+    }
+
+    public long getDuration(){
+        return duration;
+    }
+    /*End of "get" methods*/
 
     private int makeId(){
         int number= (int) Math.random()*100000+1;
