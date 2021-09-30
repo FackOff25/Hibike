@@ -2,9 +2,9 @@ package com.hibike;
 
 public class Keys {
     public interface ReplayMods{
-        String NO_REPLAY="without replay";
-        String REPLAY_PLAYLIST="replay playlist";
-        String REPLAY_SONG="replay song";
+        int NO_REPLAY=0;
+        int REPLAY_PLAYLIST=1;
+        int REPLAY_SONG=2;
     }
 
     public interface Songs{
@@ -14,6 +14,10 @@ public class Keys {
         String PLAYLISTS_NAMES="playlistsnames";
         String PLAYLIST_SONGS="_playlistsongs";
         String PLAYLIST_NAME="_playlistname";
+        int ALL_SONGS_PLAYLIST_ID=-1;
+        int CURRENT_PLAYLIST_ID=-2;
+        int SELECTED_SONGS_PLAYLIST_ID=-3;
+        String PLAYLIST_CURRENT="Текущий";
         String SONG_PATH="_PATH";
         String SONG_NAME="_NAME";
         String SONG_AUTHOR="_AUTHOR";

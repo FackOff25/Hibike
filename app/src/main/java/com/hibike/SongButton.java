@@ -45,26 +45,30 @@ public class SongButton extends RelativeLayout {
         if (song.getImage()!=null) {
             image.setImageDrawable(Drawable.createFromPath(song.getImage()));
         }
-        duration.setText(convertToTimeFormat(song.getDuration()));
+        duration.setText(convertFromTimeFormat(song.getDuration()));
 
         newSong.setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(Settings.getSelectedSongs().isEmpty()){
+                Settings settings=new Settings(context);
+                if(settings.getSelectedSongs().size()==0){
+                    song.play();
+                    /*
                     Intent toService=new Intent(context,HibikeService.class);
                     toService.setAction(PLAY_THIS_SONG);
                     toService.putExtra(PATH_EXTRA,song.getPath());
                     context.startService(toService);
+                     */
                 }else{
-                    ArrayList<Song> selectedSongs=Settings.getSelectedSongs();
-                    if(selectedSongs.contains(song)){
-                        selectedSongs.remove(song);
+                    Playlist selectedSongs=settings.getSelectedSongs();
+                    if(selectedSongs.contains(song.getId())){
+                        selectedSongs.remove(song.getId());
                         getChildAt(0).setBackground(context.getDrawable(R.drawable.button));
                     }else{
                         getChildAt(0).setBackgroundColor(context.getColor(R.color.colorAccent));
-                        selectedSongs.add(song);
+                        selectedSongs.add(song.getId());
                     }
-                    Settings.setSelectedSongs(selectedSongs);
+                    settings.setSelectedSongs(selectedSongs);
                 }
             }
         });
@@ -86,7 +90,7 @@ public class SongButton extends RelativeLayout {
         Button newSong=(Button) findViewById(R.id.songButton);
         newSong.setOnLongClickListener(listener);
     }
-    private String convertToTimeFormat(long time){
+    private String convertFromTimeFormat(long time){
         long seconds, minutes, hours;
 
         String timeString;

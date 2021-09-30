@@ -9,10 +9,11 @@ import java.util.concurrent.CopyOnWriteArraySet;
 import static com.hibike.Keys.Songs.PLAYLISTS;
 import static com.hibike.Keys.Songs.PLAYLISTS_ID;
 import static com.hibike.Keys.Songs.PLAYLISTS_NAMES;
+import static com.hibike.Keys.Songs.PLAYLIST_CURRENT;
 import static com.hibike.Keys.Songs.PLAYLIST_SONGS;
 import static com.hibike.Keys.Songs.PLAYLIST_NAME;
 
-public class Playlist extends ArrayList<Song> {
+public class Playlist extends ArrayList<Integer> {
     private int id;
     public String name;
     public int currentSong=1;
@@ -20,21 +21,19 @@ public class Playlist extends ArrayList<Song> {
 
     private Context context;
 
-    Playlist(int _id, Context _context) throws Exception{
+    Playlist(int _id, Context _context) throws NoSuchPlaylistException{
         super();
+        id=_id;
         context=_context;
         CopyOnWriteArraySet<String> playlists=new CopyOnWriteArraySet<String>();
         SharedPreferences settings=context.getSharedPreferences(PLAYLISTS,Context.MODE_PRIVATE);
         settings.getStringSet(PLAYLISTS_NAMES, playlists);
 
-        if(!playlists.contains(id)) throw new Exception("There is no such playlist");
+        if(!playlists.contains(id)) throw new NoSuchPlaylistException(id);
 
-        id=_id;
-        settings.getString(id+PLAYLIST_NAME, name);
+        name=settings.getString(id+PLAYLIST_NAME, null);
 
-        CopyOnWriteArraySet<String> temp_songs=new CopyOnWriteArraySet<String>();
-        settings.getStringSet(id+PLAYLIST_SONGS,temp_songs);
-        ArrayList<String> songs = new ArrayList<String>(temp_songs);
+        ArrayList<String> songs = new ArrayList<String>(settings.getStringSet(id+PLAYLIST_SONGS, null));
         songCounter=songs.size();
         for (int count=1; count<=songCounter; count++) add(Integer.parseInt(songs.get(count)));
     }
@@ -46,39 +45,21 @@ public class Playlist extends ArrayList<Song> {
         id=makeId();
     }
 
-    public boolean add(int id) {
-        Song song;
-        try{
-            song=new Song(id, context);
-        }catch (NoMoreSongException e){
-            return false;
-        }catch (NoSongFileException e){
-            return false;
-        }
-        return super.add(song);
+    public void addNext(int _id){
+        add(currentSong+1, _id);
     }
 
-    @Override
-    public boolean add(Song song) {
-        songCounter++;
-        return super.add(song);
-    }
-
-    public void addNext(Song song){
-        add(currentSong+1, song);
-    }
-
-    public void play(){
+    public void play() throws NoSongFileException {
         play(currentSong);
     }
 
-    public void play(int position){
-        get(position).play();
+    public void play(int position) throws NoSongFileException {
+        new Song(get(position),context).play();
     }
 
     public boolean move(int curPosition, int newPosition){
         if (curPosition<newPosition) newPosition--;
-        Song song=get(curPosition);
+        int song=get(curPosition);
 
         remove(curPosition);
         add(newPosition, song);
@@ -88,11 +69,11 @@ public class Playlist extends ArrayList<Song> {
 
     public void save(){
         CopyOnWriteArraySet<String> songs=new CopyOnWriteArraySet<String>();
-        CopyOnWriteArraySet<String> playlists=new CopyOnWriteArraySet<String>();
-        for (int count=1; count<=songCounter; count++)  songs.add(Integer.toString(get(count).id));
+        CopyOnWriteArraySet<String> playlists;
+        for (int count=1; count<=songCounter; count++)  songs.add(Integer.toString(get(count)));
 
         SharedPreferences settings=context.getSharedPreferences(PLAYLISTS,Context.MODE_PRIVATE);
-        settings.getStringSet(PLAYLISTS_ID, playlists);
+        playlists = (CopyOnWriteArraySet<String>) settings.getStringSet(PLAYLISTS_ID, null);
 
         if(!playlists.contains(id)) playlists.add(Integer.toString(id));
 
@@ -106,7 +87,7 @@ public class Playlist extends ArrayList<Song> {
     public void delete(){
         CopyOnWriteArraySet<String> playlists=new CopyOnWriteArraySet<String>();
         SharedPreferences settings=context.getSharedPreferences(PLAYLISTS,Context.MODE_PRIVATE);
-        settings.getStringSet(PLAYLISTS_ID, playlists);
+        playlists = (CopyOnWriteArraySet<String>) settings.getStringSet(PLAYLISTS_ID, null);
 
         if(!playlists.contains(id)) return;
 
@@ -122,7 +103,7 @@ public class Playlist extends ArrayList<Song> {
         int number= (int) Math.random()*1000+1;
         CopyOnWriteArraySet<String> playlists=new CopyOnWriteArraySet<String>();
         SharedPreferences settings=context.getSharedPreferences(PLAYLISTS,Context.MODE_PRIVATE);
-        settings.getStringSet(PLAYLISTS_ID, playlists);
+        playlists = (CopyOnWriteArraySet<String>) settings.getStringSet(PLAYLISTS_ID, null);
         while(playlists.contains(number)) number++;
         return number;
     }

@@ -138,7 +138,7 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
             editor.apply();
             settings.setNotFirstLoad();
         }else{
-            FolderScanner scanner=new FolderScanner();
+            FolderScanner scanner=new FolderScanner(this);
             scanner.execute(Environment.getExternalStorageDirectory());
         }
         settings.setPlaylist(settings.getPlayingPlayListName(),settings.getPlayingPlayList());
@@ -968,51 +968,5 @@ public class MainActivity extends AppCompatActivity implements OnAudioFocusChang
                 e.printStackTrace();
             }
             }
-    }
-    class FolderScanner extends AsyncTask<File, Void, Void> {
-        private ArrayList<File> allSongsPlaylist=new ArrayList<File>();
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-            getPermissoin();
-            int permissionStatus = checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
-            if (permissionStatus!=PackageManager.PERMISSION_GRANTED) onPreExecute();
-        }
-        @Override
-        protected Void doInBackground(File... files) {
-            for (File folder:files){
-                scanFolder(folder);
-            }
-            allSongsPlaylist=sortByName(allSongsPlaylist);
-            SharedPreferences settings2=getSharedPreferences(SETTINGS_NAME,Context.MODE_PRIVATE);
-            SharedPreferences.Editor editor = settings2.edit();
-            File[] playlist=allSongsPlaylist.toArray(new File[allSongsPlaylist.size()]);
-            String playlistString="";
-            for (File file:playlist){
-                if (file!=null) playlistString+=">>"+file.getAbsolutePath();
-            }
-            editor.putString(ALL_SONGS,playlistString);
-            editor.apply();
-            return null;
-        }
-
-        private void scanFolder(File folder){
-            if (folder.isDirectory()){
-                FilenameFilter filter = new FilenameFilter() {
-                    public boolean accept(File directory, String fileName) {
-                        File file=new File(directory+"/"+fileName);
-
-                        return fileName.endsWith(".mp3")||file.isDirectory();
-                    }
-                };
-                File[] folderFiles=folder.listFiles(filter);
-                if (folderFiles.length>0){
-                for (File item:folderFiles){
-                    if (item.isDirectory()) scanFolder(item);
-                    else {
-                        allSongsPlaylist.add(item);}
-                }}
-            }
-        }
     }
 }

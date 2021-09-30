@@ -14,3 +14,9 @@ class NoSongFileException extends FileNotFoundException {
         initCause(new Throwable("There is no file on "+path));
     }
 }
+
+class NoSuchPlaylistException extends NoSuchElementException {
+    public NoSuchPlaylistException(int id){
+        initCause(new Throwable("There is no playlist with id="+id));
+    }
+}

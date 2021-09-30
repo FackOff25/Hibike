@@ -13,7 +13,7 @@ import static com.hibike.Keys.Songs.*;
 
 public class Song {
     //Technical
-    public int id;
+    private int id;
     private String path;
     final private Context context;
 
@@ -53,7 +53,7 @@ public class Song {
         if(!settings.contains(Integer.toString(id))) throw new NoMoreSongException(id);
         String[] parameters=new String[5];
 
-        settings.getStringSet(Integer.toString(id), parametersSet);
+        parametersSet = (CopyOnWriteArraySet<String>) settings.getStringSet(Integer.toString(id), null);
         parametersSet.toArray(parameters);
 
         path=parameters[0];
@@ -83,9 +83,14 @@ public class Song {
 
     public void play(){
         //TODO:Make intent method after Service revising
+        Settings settings=new Settings(context);
+        settings.setPlayingSong(id);
     }
 
     /* Methods to give parameters*/
+    public int getId() {
+        return id;
+    }
     public String getPath(){
         return path;
     }
@@ -115,7 +120,7 @@ public class Song {
         int number= (int) Math.random()*100000+1;
         CopyOnWriteArraySet<String> playlists=new CopyOnWriteArraySet<String>();
         SharedPreferences settings=context.getSharedPreferences(SONGS_SETTINGS_NAME,Context.MODE_PRIVATE);
-        settings.getStringSet(Integer.toString(id), playlists);
+        playlists = (CopyOnWriteArraySet) settings.getStringSet(Integer.toString(id), null);
         while(playlists.contains(Integer.toString(number))) number++;
         return number;
     }
