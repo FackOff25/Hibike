@@ -35,10 +35,9 @@ public class Settings {
         editor.apply();
     }
 
-    public void setCurrentPlaylist(int playlistId){
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putInt(PLAYING_PLAYLIST, playlistId);
-        editor.apply();
+    public void setCurrentPlaylist(Playlist playlist){
+        playlist.makePlaying();
+        playlist.save();
     }
 
     //Sets which playlist is playing
@@ -56,13 +55,22 @@ public class Settings {
         return new Playlist(ALL_SONGS_PLAYLIST_ID,context);
     }
 
-    public Playlist getPlayingPlayList() throws NoSuchPlaylistException {
-        return new Playlist(CURRENT_PLAYLIST_ID,context);
+    public Playlist getPlayingPlayList(){
+        try {
+            return new Playlist(CURRENT_PLAYLIST_ID, context);
+        }catch (NoSuchPlaylistException e){
+            return new Playlist(ALL_SONGS_PLAYLIST_ID,context);
+        }
     }
 
-    public ArrayList<String> getPlaylists(){
-        ArrayList<String> playlists=new ArrayList<>();
-        if (settings.contains(PLAYLISTS)) playlists.addAll(settings.getStringSet(PLAYLISTS,null));
+    public  ArrayList<Playlist> getPlaylists(){
+        ArrayList<String> playlistsIds=new ArrayList<>();
+        ArrayList<Playlist> playlists=null;
+        if (settings.contains(PLAYLISTS)) {
+            playlistsIds.addAll(settings.getStringSet(PLAYLISTS,null));
+            playlists=new ArrayList<>();
+            for (int count=1;count<=playlistsIds.size(); count++) playlists.add(new Playlist(Integer.parseInt(playlistsIds.get(count)),context));
+        }
         return playlists;
     }
 
@@ -79,6 +87,16 @@ public class Settings {
         editor.putStringSet(CURRENT_PLAYLIST_ID+PLAYLIST_SONGS, new CopyOnWriteArraySet<String>(songs));
         editor.apply();
     }
+    public void setNoSelectedSongs(){
+        CopyOnWriteArraySet<String> playlists;
+
+        SharedPreferences settings=context.getSharedPreferences(PLAYLISTS,Context.MODE_PRIVATE);
+        playlists = (CopyOnWriteArraySet<String>) settings.getStringSet(PLAYLISTS_ID, null);
+
+        editor.putStringSet(PLAYLISTS_ID, playlists);
+        editor.putStringSet(CURRENT_PLAYLIST_ID+PLAYLIST_SONGS, new CopyOnWriteArraySet<String>());
+        editor.apply();
+    }
 
     public Playlist getSelectedSongs(){
         return new Playlist(SELECTED_SONGS_PLAYLIST_ID, context);
@@ -88,11 +106,14 @@ public class Settings {
         int playlistName=playlistName=settings.getInt(OPENED_PLAYLIST, ALL_SONGS_PLAYLIST_ID);
         return playlistName;
     }
-
+    //Setting and getting time of playing song
+    public void setTime(int time){
+        editor.putInt(SONG_TIME, time);
+        editor.apply();
+    }
 
     public int getTime(){
-        int time=settings.getInt(SONG_TIME,0);
-        return time;
+        return settings.getInt(SONG_TIME,0);
     }
 
     //Setting and getting a state of "Play Random" button
@@ -125,13 +146,17 @@ public class Settings {
         return isFirstLoad;
     }
 
-    /*
+    //Put info is any song playing. Needed for notification
+    public void setIsPlay(boolean isPlay){
+        editor.putBoolean(IS_PLAY, isPlay);
+        editor.apply();
+    }
     public boolean getIsPlay(){
         boolean isPlay=false;
         if (settings.contains(IS_PLAY)) isPlay=settings.getBoolean(IS_PLAY,false);
         return isPlay;
     }
-     */
+
     /*
     public File[] getPlayListByName(String playlistName){
         File[] playlist;

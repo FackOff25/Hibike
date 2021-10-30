@@ -7,6 +7,8 @@ import android.media.MediaMetadataRetriever;
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Set;
 import java.util.concurrent.CopyOnWriteArraySet;
 
 import static com.hibike.Keys.Songs.*;
@@ -26,7 +28,19 @@ public class Song {
 
     public Song(File song, Context _context) throws IOException {
         context=_context;
-        id=makeId();
+
+        Settings settings=new Settings(context);
+        Playlist allSongs=settings.getAllSongs();
+        String path=song.getPath();
+        boolean isThere=false;
+        for (int count=1; count<=allSongs.size(); count++) {
+            Song checkedSong=new Song(allSongs.get(count), context);
+            if (checkedSong.getPath().equals(path)){
+                id=checkedSong.getId();
+                isThere=true;
+            }
+        }
+        if(!isThere) id=makeId();
 
         name=PrimaryMusicData.getName(song);
         author=PrimaryMusicData.getAuthor(song);
@@ -86,6 +100,14 @@ public class Song {
         Settings settings=new Settings(context);
         settings.setPlayingSong(id);
     }
+    static public boolean isInBase(String path,Context context){
+        Settings settings=new Settings(context);
+        File[] allSongs=settings.getAllSongs().toFileArray();
+        for (File file:allSongs) {
+            if (path.equals(file.getAbsolutePath())) return true;
+        }
+        return false;
+    };
 
     /* Methods to give parameters*/
     public int getId() {
@@ -115,7 +137,9 @@ public class Song {
         return image;
     }
     /*End of "get" methods*/
-
+    public File toFile(){
+        return new File(path);
+    }
     private int makeId(){
         int number= (int) Math.random()*100000+1;
         CopyOnWriteArraySet<String> playlists=new CopyOnWriteArraySet<String>();

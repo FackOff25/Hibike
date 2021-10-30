@@ -2,29 +2,29 @@ package com.hibike;
 
 import android.Manifest;
 import android.content.Context;
-import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 
 import java.io.File;
 import java.io.FilenameFilter;
-import java.util.ArrayList;
+import java.io.IOException;
 
-import static com.hibike.Keys.Settings.ALL_SONGS;
-import static com.hibike.Keys.Settings.SETTINGS_NAME;
+import static com.hibike.Keys.Songs.ALL_SONGS_PLAYLIST_ID;
 
 class FolderScanner extends AsyncTask<File, Void, Void> {
     private final MainActivity mainActivity;
-    private ArrayList<File> allSongsPlaylist = new ArrayList<File>();
+    private Playlist allSongsPlaylist;
 
     public FolderScanner(MainActivity mainActivity) {
         this.mainActivity = mainActivity;
+        allSongsPlaylist=new Playlist(ALL_SONGS_PLAYLIST_ID,mainActivity);
+        allSongsPlaylist.clear();
     }
 
     @Override
     protected void onPreExecute() {
         super.onPreExecute();
-        mainActivity.getPermissoin();
+        mainActivity.getPermission();
         int permissionStatus = mainActivity.checkSelfPermission(Manifest.permission.WRITE_EXTERNAL_STORAGE);
         if (permissionStatus != PackageManager.PERMISSION_GRANTED) onPreExecute();
     }
@@ -32,22 +32,19 @@ class FolderScanner extends AsyncTask<File, Void, Void> {
     @Override
     protected Void doInBackground(File... files) {
         for (File folder : files) {
-            scanFolder(folder);
+            try {
+                scanFolder(folder);
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
         }
-        allSongsPlaylist = mainActivity.sortByName(allSongsPlaylist);
-        SharedPreferences settings2 = mainActivity.getSharedPreferences(SETTINGS_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings2.edit();
-        File[] playlist = allSongsPlaylist.toArray(new File[allSongsPlaylist.size()]);
-        String playlistString = "";
-        for (File file : playlist) {
-            if (file != null) playlistString += ">>" + file.getAbsolutePath();
-        }
-        editor.putString(ALL_SONGS, playlistString);
-        editor.apply();
+
+        try { allSongsPlaylist.sortByName(); } catch (NoSongFileException e) { e.printStackTrace(); }
+        allSongsPlaylist.save();
         return null;
     }
 
-    private void scanFolder(File folder) {
+    private void scanFolder(File folder) throws IOException {
         if (folder.isDirectory()) {
             FilenameFilter filter = new FilenameFilter() {
                 public boolean accept(File directory, String fileName) {
@@ -66,5 +63,34 @@ class FolderScanner extends AsyncTask<File, Void, Void> {
                 }
             }
         }
+    }
+}
+
+class Scanning{
+    final private Playlist allSongsPlaylist;
+    final private Context context;
+    Scanning(Context _context){
+        context=_context;
+        allSongsPlaylist=new Playlist(ALL_SONGS_PLAYLIST_ID, context);
+        allSongsPlaylist.clear();
+    }
+    public void scanFolder(File folder) throws IOException {
+        if (folder.isDirectory()){
+            FilenameFilter filter = new FilenameFilter() {
+                public boolean accept(File directory, String fileName) {
+                    File file=new File(directory+"/"+fileName);
+                    return fileName.endsWith(".mp3")||file.isDirectory();
+                }
+            };
+            File[] folderFiles=folder.listFiles(filter);
+            if (folderFiles.length>0){
+                for (File item:folderFiles){
+                    if (item.isDirectory()) {scanFolder(item);}
+                    else {allSongsPlaylist.add(item);}
+                }}
+        }
+    }
+    public Playlist getAllSongsPlaylist(){
+        return allSongsPlaylist;
     }
 }

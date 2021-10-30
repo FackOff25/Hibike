@@ -89,8 +89,9 @@ class PrimaryMusicData{
             fin.close();
         }
         if (!name.equals("")) return name;
-        else {String fullFileName=music.getName();
-            for (int count=0;fullFileName.toCharArray()[count]!='.';count++) name+=fullFileName.toCharArray()[count];
+        else {
+            String[] fullFileName=music.getName().split(".");
+            for (int count=0;count<fullFileName.length-1;count++) name+=fullFileName[count];
             return name;
         }
     }
@@ -753,6 +754,10 @@ class TertiaryMusicData{
     public String musicKind;
     public File unReadableTags;
     public int allTagsSize;
+    public void tertiarySearch(Song music,Context context) throws IOException,NullPointerException{
+        File song=new File(music.getPath());
+        tertiarySearch(song, context);
+    }
     public void tertiarySearch(File music,Context context) throws IOException,NullPointerException{
         FileInputStream f=new FileInputStream(music);
         BufferedInputStream fin=new BufferedInputStream(f);

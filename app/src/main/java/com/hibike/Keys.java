@@ -8,7 +8,8 @@ public class Keys {
     }
 
     public interface Songs{
-        String SONGS_SETTINGS_NAME="com.hibikeplayer.settings.songsettingsname";
+        String SONGS_SETTINGS_NAME="com.hibikeplayer.settings.songsettingsname";                    //Song class only
+        String SONG_ID="com.hibikeplayer.settings.songid";
         String PLAYLISTS="playlists";
         String PLAYLISTS_ID="playlistsid";
         String PLAYLISTS_NAMES="playlistsnames";
@@ -64,5 +65,6 @@ public class Keys {
         String PLAY_CHANGED="com.hibikeplayer.background.playchanged";
         String SET_TIME="com.hibikeplayer.background.settime";
         String CLOSE="com.hibikeplayer.background.close";
+        String SHAKE="com.hibikeplayer.background.shake";
     }
 }

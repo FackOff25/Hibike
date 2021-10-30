@@ -86,6 +86,10 @@ public class SongButton extends RelativeLayout {
         this(new Song(id, _context), _context);
     }
 
+    public Song getSong() {
+        return song;
+    }
+
     public void setOnLongClickListener(OnLongClickListener listener){
         Button newSong=(Button) findViewById(R.id.songButton);
         newSong.setOnLongClickListener(listener);
